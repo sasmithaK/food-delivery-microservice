@@ -19,6 +19,9 @@ import java.util.stream.Collectors;
 public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
+    private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+    private final com.fooddeliverysystem.restaurentmanagemenetsystem.security.JwtUtils jwtUtils;
+    private final org.springframework.security.core.userdetails.UserDetailsService userDetailsService;
 
     @Override
     public UserDTO register(UserDTO userDTO) {
@@ -31,7 +34,7 @@ public class AuthServiceImpl implements AuthService {
             User user = User.builder()
                     .username(userDTO.getUsername())
                     .email(userDTO.getEmail())
-                    .password(userDTO.getPassword())
+                    .password(passwordEncoder.encode(userDTO.getPassword()))
                     .role(User.Role.fromString(userDTO.getRole()))
                     .build();
 
@@ -56,13 +59,21 @@ public class AuthServiceImpl implements AuthService {
 
         log.debug("Found user: {}", user.getEmail());
 
-        if (!user.getPassword().equals(loginDTO.getPassword())) {
+        if (!passwordEncoder.matches(loginDTO.getPassword(), user.getPassword())) {
             log.error("Password mismatch for user: {}", user.getEmail());
             throw new InvalidCredentialsException("Incorrect password");
         }
 
         log.info("Login successful for user: {}", user.getEmail());
-        return convertToUserDTO(user);
+        
+        // Load user details and generate token
+        org.springframework.security.core.userdetails.UserDetails userDetails = 
+                userDetailsService.loadUserByUsername(user.getEmail());
+        String token = jwtUtils.generateToken(userDetails);
+        
+        UserDTO userDTO = convertToUserDTO(user);
+        userDTO.setToken(token); // Need to add token field to UserDTO
+        return userDTO;
     }
 
     @Override

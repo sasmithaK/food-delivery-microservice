@@ -15,4 +15,5 @@ public class UserDTO {
     private String email;
     private String password;
     private String role; // Will accept "ADMIN", "RESTAURANT_ADMIN", or "CUSTOMER"
+    private String token;
 }
