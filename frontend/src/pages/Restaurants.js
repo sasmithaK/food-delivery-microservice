@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api/axios';
 import { useNavigate } from 'react-router-dom';
 
 const Restaurants = () => {
@@ -10,7 +10,7 @@ const Restaurants = () => {
 
   const fetchRestaurants = async () => {
     try {
-      const response = await axios.get('/api/restaurants');
+      const response = await api.get('/restaurant-service/restaurants');
       setRestaurants(response.data);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to fetch restaurants');
@@ -42,7 +42,7 @@ const Restaurants = () => {
 
   const toggleAvailability = async (id, currentStatus) => {
     try {
-      await axios.put(`/api/restaurants/${id}/status`, { available: !currentStatus });
+      await api.put(`/restaurant-service/restaurants/${id}/status`, { available: !currentStatus });
       fetchRestaurants();
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to update status');
@@ -52,9 +52,9 @@ const Restaurants = () => {
 
   const deleteRestaurant = async (id) => {
     if (!window.confirm('Are you sure you want to delete this restaurant?')) return;
-    
+
     try {
-      await axios.delete(`/api/restaurants/${id}`);
+      await api.delete(`/restaurant-service/restaurants/${id}`);
       fetchRestaurants();
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to delete restaurant');
@@ -132,9 +132,8 @@ const Restaurants = () => {
 
                         <button
                           onClick={() => toggleAvailability(restaurantId, restaurant.available)}
-                          className={`btn btn-sm ${
-                            restaurant.available ? 'btn-outline-warning' : 'btn-outline-success'
-                          }`}
+                          className={`btn btn-sm ${restaurant.available ? 'btn-outline-warning' : 'btn-outline-success'
+                            }`}
                         >
                           {restaurant.available ? 'Mark Unavailable' : 'Mark Available'}
                         </button>
