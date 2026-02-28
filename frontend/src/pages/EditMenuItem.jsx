@@ -1,9 +1,40 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import {
+  Box,
+  Container,
+  Typography,
+  TextField,
+  Button,
+  Card,
+  CardContent,
+  ThemeProvider,
+  createTheme,
+  CssBaseline,
+  Alert,
+  Stack,
+  InputAdornment,
+  MenuItem,
+  CircularProgress
+} from '@mui/material';
+import { ArrowLeft, Utensils, DollarSign, Type, Save, Tag } from 'lucide-react';
+import api from "../api/axios";
+
+const theme = createTheme({
+  palette: {
+    mode: 'dark',
+    primary: { main: '#FF4D4D' },
+    background: { default: '#0A0A0A', paper: '#1A1A1A' },
+  },
+  typography: { fontFamily: '"Outfit", "Inter", sans-serif' },
+});
+
+const categories = [
+  'Appetizers', 'Main Course', 'Desserts', 'Beverages', 'Sides', 'Snacks'
+];
 
 const EditMenuItem = () => {
-  const { restaurantId, menuId } = useParams();
+  const { id, menuId } = useParams();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: '',
@@ -12,150 +43,169 @@ const EditMenuItem = () => {
     category: ''
   });
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const fetchMenuItem = async () => {
+    const fetchItem = async () => {
       try {
-        const response = await axios.get(`/api/restaurants/${restaurantId}/menu/${menuId}`);
-        const item = response.data;
-        setFormData({
-          name: item.name,
-          description: item.description || '',
-          price: item.price.toString(),
-          category: item.category || ''
-        });
+        const response = await api.get(`/restaurant-service/restaurants/${id}/menu`);
+        const item = response.data.find(i => (i._id || i.id) === menuId);
+        if (item) {
+          setFormData({
+            name: item.name,
+            description: item.description || '',
+            price: item.price.toString(),
+            category: item.category || 'Main Course'
+          });
+        } else {
+          setError('Menu item not found.');
+        }
       } catch (err) {
-        setError(err.response?.data?.message || 'Failed to fetch menu item');
+        setError('Failed to load menu item details.');
       } finally {
         setLoading(false);
       }
     };
+    fetchItem();
+  }, [id, menuId]);
 
-    fetchMenuItem();
-  }, [restaurantId, menuId]);
-
-  const handleChange = (e) => {
+  const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setFormData({ ...formData, [name]: value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitting(true);
+    setError('');
     try {
-      await axios.put(`/api/restaurants/${restaurantId}/menu/${menuId}`, {
+      await api.put(`/restaurant-service/restaurants/${id}/menu/${menuId}`, {
         ...formData,
         price: parseFloat(formData.price)
       });
-      navigate(`/menu/${restaurantId}`);
+      navigate(`/menu/${id}`);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to update menu item');
+      setError(err.response?.data?.message || 'Failed to update menu item.');
+    } finally {
+      setSubmitting(false);
     }
   };
 
-  if (loading) return <div className="text-center py-8">Loading...</div>;
+  if (loading) {
+    return (
+      <ThemeProvider theme={theme}>
+        <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <CircularProgress color="primary" />
+        </Box>
+      </ThemeProvider>
+    );
+  }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-md">
-      <button 
-        onClick={() => navigate(-1)} 
-        className="mb-4 flex items-center text-blue-600 hover:text-blue-800"
-      >
-        <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-        </svg>
-        Back to Menu
-      </button>
-
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">Edit Menu Item</h1>
-
-      {error && (
-        <div className="mb-4 p-3 bg-red-100 text-red-700 rounded">
-          {error}
-        </div>
-      )}
-
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-gray-700 mb-1">Name</label>
-          <input
-            type="text"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md"
-            required
-          />
-        </div>
-
-        <div>
-          <label className="block text-gray-700 mb-1">Description</label>
-          <textarea
-            name="description"
-            value={formData.description}
-            onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md"
-            rows="3"
-          />
-        </div>
-
-        <div>
-          <label className="block text-gray-700 mb-1">Price</label>
-          <input
-            type="number"
-            name="price"
-            value={formData.price}
-            onChange={handleChange}
-            min="0"
-            step="0.01"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md"
-            required
-          />
-        </div>
-
-        <div>
-          <label className="block text-gray-700 mb-1">Category</label>
-          <input
-            type="text"
-            name="category"
-            value={formData.category}
-            onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md"
-          />
-        </div>
-
-        <div className="flex justify-end space-x-3 pt-4">
-          <button
-            type="button"
-            style={{
-              backgroundColor: '#1a237e',  // Very dark blue
-              ':hover': {
-                backgroundColor: '#0d1542'  // Even darker on hover
-              }
-            }}
-            onClick={() => navigate(-1)}
-            className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <Box sx={{ minHeight: '100vh', py: 8, background: 'radial-gradient(circle at 50% 50%, #1a1a1a 0%, #0a0a0a 100%)' }}>
+        <Container maxWidth="sm">
+          <Button
+            startIcon={<ArrowLeft />}
+            onClick={() => navigate(`/menu/${id}`)}
+            sx={{ mb: 4, color: 'text.secondary', textTransform: 'none' }}
           >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            style={{
-              backgroundColor: '#1a237e',  // Very dark blue
-              ':hover': {
-                backgroundColor: '#0d1542'  // Even darker on hover
-              }
-            }}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-          >
-            Save Changes
-          </button>
-        </div>
-      </form>
-    </div>
+            Back to Menu
+          </Button>
+
+          <Card sx={{ borderRadius: 6, border: '1px solid rgba(255,255,255,0.05)', backgroundColor: 'background.paper' }}>
+            <CardContent sx={{ p: 5 }}>
+              <Box sx={{ textAlign: 'center', mb: 4 }}>
+                <Box sx={{ display: 'inline-flex', p: 2, borderRadius: 3, backgroundColor: 'primary.main', mb: 2, color: '#fff' }}>
+                  <Utensils size={32} />
+                </Box>
+                <Typography variant="h3" sx={{ fontWeight: 800, mb: 1 }}>Edit Dish</Typography>
+                <Typography variant="body1" color="text.secondary">Refine your culinary creation.</Typography>
+              </Box>
+
+              {error && <Alert severity="error" sx={{ mb: 4, borderRadius: 2 }}>{error}</Alert>}
+
+              <form onSubmit={handleSubmit}>
+                <Stack spacing={3}>
+                  <TextField
+                    fullWidth
+                    label="Dish Name"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    required
+                    InputProps={{
+                      startAdornment: <InputAdornment position="start"><Type size={20} color="#666" /></InputAdornment>,
+                    }}
+                  />
+
+                  <TextField
+                    fullWidth
+                    label="Price"
+                    name="price"
+                    type="number"
+                    value={formData.price}
+                    onChange={handleInputChange}
+                    required
+                    InputProps={{
+                      startAdornment: <InputAdornment position="start"><DollarSign size={20} color="#666" /></InputAdornment>,
+                    }}
+                  />
+
+                  <TextField
+                    fullWidth
+                    select
+                    label="Category"
+                    name="category"
+                    value={formData.category}
+                    onChange={handleInputChange}
+                    InputProps={{
+                      startAdornment: <InputAdornment position="start"><Tag size={20} color="#666" /></InputAdornment>,
+                    }}
+                  >
+                    {categories.map((option) => (
+                      <MenuItem key={option} value={option}>
+                        {option}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+
+                  <TextField
+                    fullWidth
+                    label="Description"
+                    name="description"
+                    multiline
+                    rows={3}
+                    value={formData.description}
+                    onChange={handleInputChange}
+                  />
+
+                  <Button
+                    fullWidth
+                    variant="contained"
+                    size="large"
+                    type="submit"
+                    disabled={submitting}
+                    startIcon={!submitting && <Save />}
+                    sx={{
+                      py: 2,
+                      fontSize: '1.1rem',
+                      borderRadius: 3,
+                      boxShadow: '0 10px 20px rgba(255,77,77,0.3)',
+                      '&:hover': { boxShadow: '0 15px 25px rgba(255,77,77,0.4)' }
+                    }}
+                  >
+                    {submitting ? <CircularProgress size={24} color="inherit" /> : 'Update Dish'}
+                  </Button>
+                </Stack>
+              </form>
+            </CardContent>
+          </Card>
+        </Container>
+      </Box>
+    </ThemeProvider>
   );
 };
 
