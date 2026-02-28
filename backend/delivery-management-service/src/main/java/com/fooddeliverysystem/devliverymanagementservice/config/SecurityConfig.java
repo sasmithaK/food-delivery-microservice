@@ -1,6 +1,6 @@
 package com.fooddeliverysystem.devliverymanagementservice.config;
 
-import com.fooddeliverysystem.devliverymanagementservice.security.JwtRequestFilter;
+import com.fooddeliverysystem.common.security.JwtRequestFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

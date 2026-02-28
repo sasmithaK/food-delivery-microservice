@@ -17,6 +17,7 @@
     <packaging>pom</packaging>
 
     <modules>
+        <module>common</module>
         <module>restaurant-management-service</module>
         <module>order-management-service</module>
         <module>delivery-management-service</module>

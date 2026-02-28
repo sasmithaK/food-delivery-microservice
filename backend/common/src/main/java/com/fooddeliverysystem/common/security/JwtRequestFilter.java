@@ -1,4 +1,4 @@
-package com.fooddeliverysystem.devliverymanagementservice.security;
+package com.fooddeliverysystem.common.security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -19,8 +19,8 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class JwtRequestFilter extends OncePerRequestFilter {
 
-    private final UserDetailsService userDetailsService;
     private final JwtUtils jwtUtils;
+    private final UserDetailsService userDetailsService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
@@ -36,16 +36,14 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             try {
                 username = jwtUtils.extractUsername(jwt);
             } catch (Exception e) {
-                logger.error("Unable to extract username from token: " + e.getMessage());
+                logger.warn("JWT Token extraction failed: " + e.getMessage());
             }
         }
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
 
             if (jwtUtils.validateToken(jwt, userDetails)) {
-
                 UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
                 usernamePasswordAuthenticationToken
