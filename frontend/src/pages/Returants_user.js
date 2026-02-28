@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api/axios';
 import { useNavigate } from 'react-router-dom';
 
 const Restaurants = () => {
@@ -10,7 +10,7 @@ const Restaurants = () => {
 
   const fetchRestaurants = async () => {
     try {
-      const response = await axios.get('/api/restaurants');
+      const response = await api.get('/restaurant-service/restaurants');
       setRestaurants(response.data);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to fetch restaurants');
