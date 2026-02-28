@@ -23,10 +23,10 @@ import LoginPage from "./pages/login";
 import SignupPage from "./pages/SignupPage";
 import MenuPage from "./pages/MenuPage";
 import Restaurants from "./pages/Restaurants.jsx";
-import AddRestaurant from "./pages/AddRestaurant";
-import EditRestaurant from './pages/EditRestaurant';
-import AddMenuPage from "./pages/AddMenuPage";
-import EditMenuItem from './pages/EditMenuItem';
+import AddRestaurant from "./pages/AddRestaurant.jsx";
+import EditRestaurant from './pages/EditRestaurant.jsx';
+import AddMenuPage from "./pages/AddMenuPage.jsx";
+import EditMenuItem from './pages/EditMenuItem.jsx';
 import Restaurants_user from './pages/Restaurants_user.jsx'
 import MenuPage_user from './pages/MenuPage_user'
 
