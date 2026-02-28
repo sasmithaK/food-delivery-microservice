@@ -19,7 +19,7 @@ import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
 import 'primeflex/primeflex.css';
 
-import LoginPage from "./pages/login";
+import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
 import MenuPage from "./pages/MenuPage";
 import Restaurants from "./pages/Restaurants.jsx";
@@ -28,7 +28,7 @@ import EditRestaurant from './pages/EditRestaurant.jsx';
 import AddMenuPage from "./pages/AddMenuPage.jsx";
 import EditMenuItem from './pages/EditMenuItem.jsx';
 import Restaurants_user from './pages/Restaurants_user.jsx'
-import MenuPage_user from './pages/MenuPage_user'
+import MenuPage_user from './pages/MenuPage_user.jsx'
 
 function App() {
   return (
