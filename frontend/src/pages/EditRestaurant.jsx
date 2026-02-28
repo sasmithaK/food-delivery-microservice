@@ -1,6 +1,34 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import {
+  Box,
+  Container,
+  Typography,
+  TextField,
+  Button,
+  Card,
+  CardContent,
+  IconButton,
+  FormControlLabel,
+  Switch,
+  ThemeProvider,
+  createTheme,
+  CssBaseline,
+  Alert,
+  Stack,
+  CircularProgress
+} from '@mui/material';
+import { ArrowLeft, Store, MapPin, Save, Info } from 'lucide-react';
+import api from "../api/axios";
+
+const theme = createTheme({
+  palette: {
+    mode: 'dark',
+    primary: { main: '#FF4D4D' },
+    background: { default: '#0A0A0A', paper: '#1A1A1A' },
+  },
+  typography: { fontFamily: '"Outfit", "Inter", sans-serif' },
+});
 
 const EditRestaurant = () => {
   const { id } = useParams();
@@ -11,16 +39,17 @@ const EditRestaurant = () => {
     available: true
   });
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
     const fetchRestaurant = async () => {
       try {
-        const response = await axios.get(`/api/restaurants/${id}`);
-        console.log('Fetched Data:', response.data); // Debugging log
-        setFormData(response.data);
+        const response = await api.get(`/restaurant-service/restaurants/${id}`);
+        const { name, address, available } = response.data;
+        setFormData({ name, address, available });
       } catch (err) {
-        setError('Failed to fetch restaurant data');
+        setError('Failed to load restaurant details.');
       } finally {
         setLoading(false);
       }
@@ -28,109 +57,136 @@ const EditRestaurant = () => {
     fetchRestaurant();
   }, [id]);
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
+
+  const handleToggleChange = (e) => {
+    setFormData({ ...formData, available: e.target.checked });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitting(true);
+    setError('');
     try {
-      await axios.put(`/api/restaurants/${id}`, formData);
-      navigate('/restaurants'); // Corrected path
+      await api.put(`/restaurant-service/restaurants/${id}`, formData);
+      navigate('/restaurants');
     } catch (err) {
-      setError('Failed to update restaurant');
+      setError(err.response?.data?.message || 'Failed to update restaurant.');
+    } finally {
+      setSubmitting(false);
     }
   };
 
-  if (loading) return <div className="text-center py-8">Loading...</div>;
-  if (error) return <div className="text-center py-8 text-red-600">{error}</div>; // Display error if any
+  if (loading) {
+    return (
+      <ThemeProvider theme={theme}>
+        <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <CircularProgress color="primary" />
+        </Box>
+      </ThemeProvider>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden md:max-w-2xl p-6">
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-extrabold text-gray-900">Edit Restaurant</h2>
-        </div>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <Box sx={{ minHeight: '100vh', py: 8, background: 'radial-gradient(circle at 50% 50%, #1a1a1a 0%, #0a0a0a 100%)' }}>
+        <Container maxWidth="sm">
+          <Button
+            startIcon={<ArrowLeft />}
+            onClick={() => navigate('/restaurants')}
+            sx={{ mb: 4, color: 'text.secondary', textTransform: 'none' }}
+          >
+            Back to Hub
+          </Button>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-              Restaurant Name
-            </label>
-            <input
-              type="text"
-              id="name"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              required
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-            />
-          </div>
+          <Card sx={{ borderRadius: 6, border: '1px solid rgba(255,255,255,0.05)', backgroundColor: 'background.paper' }}>
+            <CardContent sx={{ p: 5 }}>
+              <Box sx={{ textAlign: 'center', mb: 4 }}>
+                <Box sx={{ display: 'inline-flex', p: 2, borderRadius: 3, backgroundColor: 'primary.main', mb: 2, color: '#fff' }}>
+                  <Store size={32} />
+                </Box>
+                <Typography variant="h3" sx={{ fontWeight: 800, mb: 1 }}>Edit Restaurant</Typography>
+                <Typography variant="body1" color="text.secondary">Update your culinary presence.</Typography>
+              </Box>
 
-          <div>
-            <label htmlFor="address" className="block text-sm font-medium text-gray-700">
-              Address
-            </label>
-            <input
-              type="text"
-              id="address"
-              name="address"
-              value={formData.address}
-              onChange={handleChange}
-              required
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-            />
-          </div>
+              {error && <Alert severity="error" sx={{ mb: 4, borderRadius: 2 }}>{error}</Alert>}
 
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="available"
-              name="available"
-              checked={formData.available}
-              onChange={handleChange}
-              className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-            />
-            <label htmlFor="available" className="ml-2 block text-sm text-gray-700">
-              Currently Available
-            </label>
-          </div>
+              <form onSubmit={handleSubmit}>
+                <Stack spacing={3}>
+                  <TextField
+                    fullWidth
+                    label="Restaurant Name"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    required
+                    InputProps={{
+                      startAdornment: <Box sx={{ mr: 1, color: 'text.secondary' }}><Info size={20} /></Box>,
+                    }}
+                  />
 
-          <div className="flex space-x-4">
-            <button
-              type="submit"
-              style={{
-                backgroundColor: '#1a237e',  // Very dark blue
-                ':hover': {
-                  backgroundColor: '#0d1542'  // Even darker on hover
-                }
-              }}
-              className="flex-1 bg-indigo-600 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            >
-              Update Restaurant
-            </button>
-            <button
-              type="button"
-              style={{
-                backgroundColor: '#1a237e',  // Very dark blue
-                ':hover': {
-                  backgroundColor: '#0d1542'  // Even darker on hover
-                }
-              }}
-              onClick={() => navigate('/restaurants')}
-              className="flex-1 bg-gray-200 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
-            >
-              Cancel
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+                  <TextField
+                    fullWidth
+                    label="Physical Address"
+                    name="address"
+                    multiline
+                    rows={2}
+                    value={formData.address}
+                    onChange={handleInputChange}
+                    required
+                    InputProps={{
+                      startAdornment: <Box sx={{ mr: 1, color: 'text.secondary' }}><MapPin size={20} /></Box>,
+                    }}
+                  />
+
+                  <Box sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    p: 2,
+                    borderRadius: 3,
+                    backgroundColor: 'rgba(255,255,255,0.02)',
+                    border: '1px solid rgba(255,255,255,0.05)'
+                  }}>
+                    <Box>
+                      <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>Active Status</Typography>
+                      <Typography variant="body2" color="text.secondary">Visible to customers immediately.</Typography>
+                    </Box>
+                    <Switch
+                      checked={formData.available}
+                      onChange={handleToggleChange}
+                      color="primary"
+                    />
+                  </Box>
+
+                  <Button
+                    fullWidth
+                    variant="contained"
+                    size="large"
+                    type="submit"
+                    disabled={submitting}
+                    startIcon={!submitting && <Save />}
+                    sx={{
+                      py: 2,
+                      fontSize: '1.1rem',
+                      borderRadius: 3,
+                      boxShadow: '0 10px 20px rgba(255,77,77,0.3)',
+                      '&:hover': { boxShadow: '0 15px 25px rgba(255,77,77,0.4)' }
+                    }}
+                  >
+                    {submitting ? <CircularProgress size={24} color="inherit" /> : 'Save Changes'}
+                  </Button>
+                </Stack>
+              </form>
+            </CardContent>
+          </Card>
+        </Container>
+      </Box>
+    </ThemeProvider>
   );
 };
 
