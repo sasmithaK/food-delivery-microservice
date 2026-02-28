@@ -31,9 +31,9 @@ services:
     ports:
       - "8082:8082"
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://host.docker.internal:3306/restaurantdb
-      - SPRING_DATASOURCE_USERNAME=root
-      - SPRING_DATASOURCE_PASSWORD=root
+      - SPRING_DATA_MONGODB_URI=mongodb://mongodb:27017/restaurant_db
+    depends_on:
+      - mongodb
 
   api-gateway:
     build:
