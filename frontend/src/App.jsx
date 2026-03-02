@@ -19,16 +19,16 @@ import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
 import 'primeflex/primeflex.css';
 
-import LoginPage from "./pages/login";
+import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
 import MenuPage from "./pages/MenuPage";
-import Restaurants from "./pages/Returants";
-import AddRestaurant from "./pages/AddRestaurant";
-import EditRestaurant from './pages/EditRestaurant';
-import AddMenuPage from "./pages/AddMenuPage";
-import EditMenuItem from './pages/EditMenuItem';
-import Restaurants_user from './pages/Returants_user'
-import MenuPage_user from './pages/MenuPage_user'
+import Restaurants from "./pages/Restaurants.jsx";
+import AddRestaurant from "./pages/AddRestaurant.jsx";
+import EditRestaurant from './pages/EditRestaurant.jsx';
+import AddMenuPage from "./pages/AddMenuPage.jsx";
+import EditMenuItem from './pages/EditMenuItem.jsx';
+import Restaurants_user from './pages/Restaurants_user.jsx'
+import MenuPage_user from './pages/MenuPage_user.jsx'
 
 function App() {
   return (
@@ -60,8 +60,8 @@ function App() {
         <Route path="/restaurants_user" element={<Restaurants_user />} />
         <Route path="/add-restaurant" element={<AddRestaurant />} />
         <Route path="/edit-restaurant/:id" element={<EditRestaurant />} />
-        <Route path="/restaurants/:restaurantId/add-menu" element={<AddMenuPage />} /> 
-        <Route path="/menu/:restaurantId/edit/:menuId" element={<EditMenuItem />} /> 
+        <Route path="/restaurants/:restaurantId/add-menu" element={<AddMenuPage />} />
+        <Route path="/menu/:restaurantId/edit/:menuId" element={<EditMenuItem />} />
 
       </Routes>
     </Router>

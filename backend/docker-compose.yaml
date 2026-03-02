@@ -1,4 +1,23 @@
 services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=orderdb
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  mongodb:
+    image: mongo:4.4
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+
   delivery-management-service:
     build:
       context: ./delivery-management-service
@@ -7,9 +26,11 @@ services:
     ports:
       - "8084:8084"
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://host.docker.internal:3306/deliverydb
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/deliverydb
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=root
+    depends_on:
+      - mysql
 
   order-management-service:
     build:
@@ -19,9 +40,11 @@ services:
     ports:
       - "8083:8083"
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://host.docker.internal:3306/orderdb
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/orderdb
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=root
+    depends_on:
+      - mysql
 
   restaurant-management-service:
     build:
@@ -31,9 +54,9 @@ services:
     ports:
       - "8082:8082"
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://host.docker.internal:3306/restaurantdb
-      - SPRING_DATASOURCE_USERNAME=root
-      - SPRING_DATASOURCE_PASSWORD=root
+      - SPRING_DATA_MONGODB_URI=mongodb://mongodb:27017/restaurant_db
+    depends_on:
+      - mongodb
 
   api-gateway:
     build:
@@ -46,3 +69,7 @@ services:
       - delivery-management-service
       - order-management-service
       - restaurant-management-service
+
+volumes:
+  mysql_data:
+  mongodb_data:
